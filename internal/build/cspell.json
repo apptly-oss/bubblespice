@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-GB",
+  "words": [
+    "apptly",
+    "bubblespice",
+    "bubbletea",
+    "charmbracelet",
+    "golangci-lint",
+    "lipgloss",
+    "qrview"
+  ],
+  "ignorePaths": [
+    "*.lock",
+    ".coverage",
+    ".git",
+    ".tmp",
+    "go.sum",
+    "node_modules",
+    "vendor"
+  ]
+}
