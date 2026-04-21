@@ -262,29 +262,39 @@ struct fields to minimise padding.
 
 #### Running Field Alignment Fixes
 
-To automatically fix field alignment issues across the codebase:
+Do **not** run `fieldalignment -fix ./...` directly against real source.
+The rewriter drops doc comments, collapses grouped fields, and can
+clobber hand-curated field ordering in ways that are hard to review
+after the fact.
 
-```bash
-# Run the fieldalignment tool with automatic fixes
-GOXTOOLS="golang.org/x/tools/go/analysis/passes"
-FA="$GOXTOOLS/fieldalignment/cmd/fieldalignment"
-go run "$FA@latest" -fix ./...
-```
+Instead, use a sacrificial probe under `.tmp/fa-probe/`:
 
-This tool will:
+1. Create `.tmp/fa-probe/probe.go` containing only the struct(s) the
+   linter flagged, stripped down to layout-equivalent types (real field
+   names, real field types — import whatever external packages the
+   fields need). Omit the probe's own `go.mod` so it joins the parent
+   module and resolves existing deps.
+2. Run the rewriter against the probe:
 
-- Analyse all struct definitions in the project.
-- Reorder fields to minimise memory padding.
-- Automatically update source files with optimised field ordering.
+   ```bash
+   go run golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest -fix ./.tmp/fa-probe
+   ```
+
+3. Read the reordered probe to learn the target field order.
+4. Apply the reorder **manually** to the real source, preserving doc
+   comments, field groupings, and any deliberate layout choices.
+5. `rm -rf .tmp/fa-probe` and run `make` to confirm the linter is
+   satisfied.
 
 #### Field Alignment Notes
 
-- Always run `make tidy` after field alignment fixes to ensure all linting
-  passes.
-- Field alignment changes may require updating struct literal initialisations.
-- The tool is safe to run repeatedly - it only makes changes when beneficial.
+- Always run `make tidy` after field alignment fixes to ensure all
+  linting passes.
+- Field alignment changes may require updating struct literal
+  initialisations.
 - Memory savings can be significant for frequently allocated structs.
-- Run field alignment manually as needed for struct optimisation.
+- A comment near the struct noting that field order is dictated by
+  fieldalignment helps future contributors avoid "tidying" it back.
 
 ### golangci-lint Configuration
 
