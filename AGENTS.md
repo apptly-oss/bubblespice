@@ -147,6 +147,12 @@ Always run `make tidy` before committing to ensure proper formatting.
 - All testing utilities are public in `testing.go` for external use.
 - Comprehensive coverage for generic functions is expected.
 - Testing utilities log successful assertions for better debugging.
+- New test files follow
+  [darvaza.org/core's TESTING.md](https://pkg.go.dev/darvaza.org/core)
+  conventions: `core.TestCase` + `core.RunTestCases` for table-driven
+  cases; named `runTestFoo` runners under `t.Run` for per-scenario
+  tests; `core.Assert*` / `core.AssertMust*` throughout. See
+  `internal/buffer/buffer_test.go` as a reference shape.
 
 ## Important Notes
 
@@ -392,6 +398,12 @@ When creating or editing documentation files:
    - Ensure `.tmp/index` exists by running `make .tmp/index`.
    - Check that all modules have test files.
    - Use `GOTEST_FLAGS` to pass additional flags to tests.
+   - If per-function coverage looks implausibly low (e.g. 60% on a
+     fully tested function), the merged profile likely includes cached
+     test results from a prior source layout. Run
+     `GOTEST_FLAGS=-count=1 make coverage` to force every test binary
+     to re-execute against current sources. `make clean-coverage` only
+     empties `.tmp/coverage/`; it does not invalidate Go's test cache.
 
 4. **Linting tool detection**:
    - Tools are auto-detected via `pnpx`.
